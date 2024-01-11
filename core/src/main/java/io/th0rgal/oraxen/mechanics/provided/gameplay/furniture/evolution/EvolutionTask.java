@@ -1,5 +1,7 @@
 package io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.evolution;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.api.OraxenBlocks;
 import io.th0rgal.oraxen.api.OraxenFurniture;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureFactory;
@@ -15,11 +17,11 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import static io.th0rgal.oraxen.mechanics.provided.gameplay.furniture.FurnitureMechanic.EVOLUTION_KEY;
 
-public class EvolutionTask extends BukkitRunnable {
+public class EvolutionTask {
 
     private final FurnitureFactory furnitureFactory;
     private final int delay;
@@ -29,66 +31,77 @@ public class EvolutionTask extends BukkitRunnable {
         this.delay = delay;
     }
 
-    @Override
     public void run() {
         for (World world : Bukkit.getWorlds())
             for (Class<? extends Entity> entityClass : FurnitureMechanic.FurnitureType.furnitureEntityClasses())
                 for (Entity entity : world.getEntitiesByClass(entityClass)) {
-                    Location entityLoc = entity.getLocation();
-                    PersistentDataContainer pdc = entity.getPersistentDataContainer();
-                    if (!pdc.has(EVOLUTION_KEY, PersistentDataType.INTEGER)) continue;
+                    entity.getScheduler().run(OraxenPlugin.get(), task -> {
+                        Location entityLoc = entity.getLocation();
+                        PersistentDataContainer pdc = entity.getPersistentDataContainer();
+                        if (!pdc.has(EVOLUTION_KEY, PersistentDataType.INTEGER)) return;
 
-                    Block blockBelow = entityLoc.getBlock().getRelative(BlockFace.DOWN);
-                    FurnitureMechanic mechanic = OraxenFurniture.getFurnitureMechanic(entity);
-                    if (mechanic == null) continue;
+                        Block blockBelow = entityLoc.getBlock().getRelative(BlockFace.DOWN);
+                        FurnitureMechanic mechanic = OraxenFurniture.getFurnitureMechanic(entity);
+                        if (mechanic == null) return;
 
-                    if (mechanic.farmlandRequired && blockBelow.getType() != Material.FARMLAND) {
-                        OraxenFurniture.remove(entity, null);
-                        continue;
-                    }
-
-                    if (mechanic.farmblockRequired) {
-                        NoteBlockMechanic noteMechanic = OraxenBlocks.getNoteBlockMechanic(blockBelow);
-                        if (noteMechanic == null || !noteMechanic.hasDryout()) {
+                        if (mechanic.farmlandRequired && blockBelow.getType() != Material.FARMLAND) {
                             OraxenFurniture.remove(entity, null);
-                            continue;
+                            return;
                         }
-                        FarmBlockDryout dryoutMechanic = noteMechanic.getDryout();
-                        if (!dryoutMechanic.isFarmBlock()) {
+
+                        if (mechanic.farmblockRequired) {
+                            NoteBlockMechanic noteMechanic = OraxenBlocks.getNoteBlockMechanic(blockBelow);
+                            if (noteMechanic == null || !noteMechanic.hasDryout()) {
+                                OraxenFurniture.remove(entity, null);
+                                return;
+                            }
+                            FarmBlockDryout dryoutMechanic = noteMechanic.getDryout();
+                            if (!dryoutMechanic.isFarmBlock()) {
+                                OraxenFurniture.remove(entity, null);
+                                return;
+                            } else if (!dryoutMechanic.isMoistFarmBlock()) {
+                                pdc.set(FurnitureMechanic.EVOLUTION_KEY, PersistentDataType.INTEGER, 0);
+                                return;
+                            }
+                        }
+
+                        EvolvingFurniture evolution = mechanic.getEvolution();
+                        if (evolution == null) return;
+
+                        int lightBoostTick = 0;
+                        int rainBoostTick = 0;
+
+                        if (evolution.isLightBoosted() && entityLoc.getBlock().getLightLevel() >= evolution.getMinimumLightLevel())
+                            lightBoostTick = evolution.getLightBoostTick();
+
+                        if (evolution.isRainBoosted() && world.hasStorm() && world.getHighestBlockAt(entityLoc).getY() > entityLoc.getY())
+                            rainBoostTick = evolution.getRainBoostTick();
+
+                        int evolutionStep = pdc.get(EVOLUTION_KEY, PersistentDataType.INTEGER) + delay + lightBoostTick + rainBoostTick;
+
+                        if (evolutionStep > evolution.getDelay()) {
+                            if (evolution.getNextStage() == null) return;
+                            if (!evolution.bernoulliTest()) return;
+
+                            FurnitureMechanic nextMechanic = (FurnitureMechanic) furnitureFactory.getMechanic(evolution.getNextStage());
+                            if (nextMechanic == null) return;
+
                             OraxenFurniture.remove(entity, null);
-                            continue;
-                        } else if (!dryoutMechanic.isMoistFarmBlock()) {
-                            pdc.set(FurnitureMechanic.EVOLUTION_KEY, PersistentDataType.INTEGER, 0);
-                            continue;
-                        }
-                    }
-
-                    EvolvingFurniture evolution = mechanic.getEvolution();
-                    if (evolution == null) continue;
-
-                    int lightBoostTick = 0;
-                    int rainBoostTick = 0;
-
-                    if (evolution.isLightBoosted() && entityLoc.getBlock().getLightLevel() >= evolution.getMinimumLightLevel())
-                        lightBoostTick = evolution.getLightBoostTick();
-
-                    if (evolution.isRainBoosted() && world.hasStorm() && world.getHighestBlockAt(entityLoc).getY() > entityLoc.getY())
-                        rainBoostTick = evolution.getRainBoostTick();
-
-                    int evolutionStep = pdc.get(EVOLUTION_KEY, PersistentDataType.INTEGER) + delay + lightBoostTick + rainBoostTick;
-
-                    if (evolutionStep > evolution.getDelay()) {
-                        if (evolution.getNextStage() == null) continue;
-                        if (!evolution.bernoulliTest()) continue;
-
-                        FurnitureMechanic nextMechanic = (FurnitureMechanic) furnitureFactory.getMechanic(evolution.getNextStage());
-                        if (nextMechanic == null) continue;
-
-                        OraxenFurniture.remove(entity, null);
-                        nextMechanic.place(entity.getLocation(), entity.getLocation().getYaw(), entity.getFacing());
-                        //OraxenFurniture.place(entity.getLocation(), evolution.getNextStage(), FurnitureMechanic.yawToRotation(entity.getLocation().getYaw()), entity.getFacing());
-                        //nextMechanic.place(entityLoc, entityLoc.getYaw(), FurnitureMechanic.yawToRotation(entityLoc.getYaw()), entity.getFacing());
-                    } else pdc.set(FurnitureMechanic.EVOLUTION_KEY, PersistentDataType.INTEGER, evolutionStep);
+                            nextMechanic.place(entity.getLocation(), entity.getLocation().getYaw(), entity.getFacing());
+                            //OraxenFurniture.place(entity.getLocation(), evolution.getNextStage(), FurnitureMechanic.yawToRotation(entity.getLocation().getYaw()), entity.getFacing());
+                            //nextMechanic.place(entityLoc, entityLoc.getYaw(), FurnitureMechanic.yawToRotation(entityLoc.getYaw()), entity.getFacing());
+                        } else pdc.set(FurnitureMechanic.EVOLUTION_KEY, PersistentDataType.INTEGER, evolutionStep);
+                    }, null);
                 }
+    }
+
+    public @NotNull ScheduledTask run(OraxenPlugin oraxenPlugin, int i, int evolutionCheckDelay) {
+        if (i <= 0) {
+            i = 1;
+        }
+        if (evolutionCheckDelay <= 0) {
+            evolutionCheckDelay = 1;
+        }
+        return Bukkit.getGlobalRegionScheduler().runAtFixedRate(oraxenPlugin, task -> run(), i, evolutionCheckDelay);
     }
 }

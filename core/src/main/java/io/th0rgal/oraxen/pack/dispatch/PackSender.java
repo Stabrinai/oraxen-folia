@@ -8,6 +8,8 @@ import io.th0rgal.oraxen.utils.AdventureUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.concurrent.TimeUnit;
+
 public abstract class PackSender {
 
     protected final HostingProvider hostingProvider;
@@ -30,11 +32,11 @@ public abstract class PackSender {
                     AdventureUtils.tagResolver("pack_url", hostingProvider.getPackURL()),
                     AdventureUtils.tagResolver("player", player.getName()));
         else
-            Bukkit.getScheduler().runTaskLaterAsynchronously(OraxenPlugin.get(),
-                    () -> Message.COMMAND_JOIN_MESSAGE.send(player,
-                            AdventureUtils.tagResolver("pack_url", hostingProvider.getPackURL()),
-                            AdventureUtils.tagResolver("player", player.getName()))
-                    , delay * 20L);
+            Bukkit.getAsyncScheduler().runDelayed(OraxenPlugin.get(), scheduledTask -> {
+                Message.COMMAND_JOIN_MESSAGE.send(player,
+                        AdventureUtils.tagResolver("pack_url", hostingProvider.getPackURL()),
+                        AdventureUtils.tagResolver("player", player.getName()));
+            }, (delay * 20L)*50, TimeUnit.MILLISECONDS);
     }
 
 }

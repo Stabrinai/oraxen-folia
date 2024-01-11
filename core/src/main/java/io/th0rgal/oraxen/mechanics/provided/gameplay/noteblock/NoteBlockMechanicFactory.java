@@ -1,6 +1,7 @@
 package io.th0rgal.oraxen.mechanics.provided.gameplay.noteblock;
 
 import com.google.gson.JsonObject;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.api.OraxenBlocks;
 import io.th0rgal.oraxen.mechanics.Mechanic;
@@ -34,7 +35,7 @@ public class NoteBlockMechanicFactory extends MechanicFactory {
     private static NoteBlockMechanicFactory instance;
     public final List<String> toolTypes;
     private boolean farmBlock;
-    private static FarmBlockTask farmBlockTask;
+    private static ScheduledTask farmBlockTask;
     public final int farmBlockCheckDelay;
     public final boolean customSounds;
     private final boolean removeMineableTag;
@@ -262,9 +263,9 @@ public class NoteBlockMechanicFactory extends MechanicFactory {
 //        }
 //        if (farmblockList.isEmpty()) return;
 
-        farmBlockTask = new FarmBlockTask(farmBlockCheckDelay);
+        FarmBlockTask fbT = new FarmBlockTask(farmBlockCheckDelay);
 
-        farmBlockTask.runTaskTimer(OraxenPlugin.get(), 0, farmBlockCheckDelay);
+        farmBlockTask = fbT.run(OraxenPlugin.get(), 0, farmBlockCheckDelay);
         farmBlock = true;
     }
 

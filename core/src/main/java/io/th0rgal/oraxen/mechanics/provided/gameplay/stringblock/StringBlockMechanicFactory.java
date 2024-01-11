@@ -1,6 +1,7 @@
 package io.th0rgal.oraxen.mechanics.provided.gameplay.stringblock;
 
 import com.google.gson.JsonObject;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.mechanics.Mechanic;
 import io.th0rgal.oraxen.mechanics.MechanicFactory;
@@ -33,7 +34,7 @@ public class StringBlockMechanicFactory extends MechanicFactory {
     private static StringBlockMechanicFactory instance;
     public final List<String> toolTypes;
     private boolean sapling;
-    private static SaplingTask saplingTask;
+    private static ScheduledTask saplingTask;
     private final int saplingGrowthCheckDelay;
     public final boolean customSounds;
     public final boolean disableVanillaString;
@@ -206,8 +207,8 @@ public class StringBlockMechanicFactory extends MechanicFactory {
 //        }
 //        if (saplingList.isEmpty()) return;
 
-        saplingTask = new SaplingTask(saplingGrowthCheckDelay);
-        saplingTask.runTaskTimer(OraxenPlugin.get(), 0, saplingGrowthCheckDelay);
+        SaplingTask st = new SaplingTask(saplingGrowthCheckDelay);
+        saplingTask = st.run(OraxenPlugin.get(), 0, saplingGrowthCheckDelay);
         sapling = true;
     }
 }

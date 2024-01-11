@@ -1,5 +1,6 @@
 package io.th0rgal.oraxen.mechanics.provided.gameplay.furniture;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.mechanics.Mechanic;
 import io.th0rgal.oraxen.mechanics.MechanicFactory;
@@ -18,7 +19,7 @@ public class FurnitureFactory extends MechanicFactory {
     public final List<String> toolTypes;
     public final int evolutionCheckDelay;
     private boolean evolvingFurnitures;
-    private static EvolutionTask evolutionTask;
+    private static ScheduledTask evolutionTask;
     public final boolean customSounds;
     public final boolean detectViabackwards;
 
@@ -66,7 +67,7 @@ public class FurnitureFactory extends MechanicFactory {
         return instance;
     }
 
-    public static EvolutionTask getEvolutionTask() {
+    public static ScheduledTask getEvolutionTask() {
         return evolutionTask;
     }
 
@@ -75,8 +76,8 @@ public class FurnitureFactory extends MechanicFactory {
             return;
         if (evolutionTask != null)
             evolutionTask.cancel();
-        evolutionTask = new EvolutionTask(this, evolutionCheckDelay);
-        evolutionTask.runTaskTimer(OraxenPlugin.get(), 0, evolutionCheckDelay);
+        EvolutionTask evolution = new EvolutionTask(this, evolutionCheckDelay);
+        evolutionTask = evolution.run(OraxenPlugin.get(), 0, evolutionCheckDelay);
         evolvingFurnitures = true;
     }
 

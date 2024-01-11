@@ -1,5 +1,6 @@
 package io.th0rgal.oraxen.mechanics.provided.misc.armor_effects;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.mechanics.Mechanic;
 import io.th0rgal.oraxen.mechanics.MechanicFactory;
@@ -9,7 +10,7 @@ import org.bukkit.configuration.ConfigurationSection;
 public class ArmorEffectsFactory extends MechanicFactory {
 
     private static ArmorEffectsFactory instance;
-    private ArmorEffectsTask armorEffectTask;
+    private ScheduledTask armorEffectTask;
     private final int delay;
 
     public ArmorEffectsFactory(ConfigurationSection section) {
@@ -28,8 +29,8 @@ public class ArmorEffectsFactory extends MechanicFactory {
         Mechanic mechanic = new ArmorEffectsMechanic(this, configurationSection);
         addToImplemented(mechanic);
         if (armorEffectTask != null) armorEffectTask.cancel();
-        armorEffectTask = new ArmorEffectsTask();
-        armorEffectTask.runTaskTimer(OraxenPlugin.get(), 0, delay);
+        ArmorEffectsTask aet = new ArmorEffectsTask();
+        armorEffectTask = aet.run(OraxenPlugin.get(), 0, delay);
         return mechanic;
     }
 

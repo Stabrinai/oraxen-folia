@@ -1,6 +1,7 @@
 package io.th0rgal.oraxen.mechanics.provided.gameplay.noteblock.farmblock;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.api.OraxenBlocks;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.noteblock.NoteBlockMechanic;
@@ -16,7 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import static io.th0rgal.oraxen.mechanics.provided.gameplay.noteblock.NoteBlockMechanic.FARMBLOCK_KEY;
 
-public class FarmBlockTask extends BukkitRunnable {
+public class FarmBlockTask {
     private final int delay;
 
     public FarmBlockTask(int delay) {
@@ -57,11 +58,20 @@ public class FarmBlockTask extends BukkitRunnable {
         }
     }
 
-    @Override
     public void run() {
         for (World world : Bukkit.getWorlds())
             for (Chunk chunk : world.getLoadedChunks())
                 CustomBlockData.getBlocksWithCustomData(OraxenPlugin.get(), chunk).forEach(block ->
                         updateBlock(block, BlockHelpers.getPDC(block)));
+    }
+
+    public ScheduledTask run(OraxenPlugin oraxenPlugin, int i, int farmBlockCheckDelay) {
+        if (i <= 0) {
+            i = 1;
+        }
+        if (farmBlockCheckDelay <= 0) {
+            farmBlockCheckDelay = 1;
+        }
+        return Bukkit.getGlobalRegionScheduler().runAtFixedRate(oraxenPlugin, task -> run(), i, farmBlockCheckDelay);
     }
 }

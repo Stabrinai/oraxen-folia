@@ -35,14 +35,18 @@ public class PackReceiver implements Listener {
             case FAILED_RELOAD -> new PackAction(Settings.RECEIVE_FAILED_RELOAD_ACTIONS.toConfigSection(), playerResolver);
             case DISCARDED -> new PackAction(Settings.RECEIVE_DISCARDED_ACTIONS.toConfigSection(), playerResolver);
         };
-        Bukkit.getScheduler().runTaskLater(OraxenPlugin.get(), () -> {
+        int delay = packAction.getDelay();
+        if (delay <= 0) {
+            delay = 1;
+        }
+        Bukkit.getGlobalRegionScheduler().runDelayed(OraxenPlugin.get(), t -> {
             if (packAction.hasMessage())
                 sendMessage(event.getPlayer(), packAction.getMessageType(), packAction.getMessageContent());
             if (packAction.hasSound())
                 packAction.playSound(event.getPlayer(), event.getPlayer().getLocation());
 
             packAction.getCommandsParser().perform(event.getPlayer());
-        }, packAction.getDelay());
+        }, delay);
     }
 
     private void sendMessage(Player receiver, String action, Component message) {

@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class BukkitPackSender extends PackSender implements Listener {
 
@@ -48,7 +49,7 @@ public class BukkitPackSender extends PackSender implements Listener {
         if (!Settings.SEND_PACK.toBool()) return;
         int delay = (int) Settings.SEND_PACK_DELAY.getValue();
         if (delay <= 0) sendPack(player);
-        else Bukkit.getScheduler().runTaskLaterAsynchronously(OraxenPlugin.get(), () ->
-                sendPack(player), delay * 20L);
+        else Bukkit.getAsyncScheduler().runDelayed(OraxenPlugin.get(), t ->
+                sendPack(player), delay * 20L*50, TimeUnit.MILLISECONDS);
     }
 }

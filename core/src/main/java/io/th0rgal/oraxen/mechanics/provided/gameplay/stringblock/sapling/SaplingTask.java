@@ -1,6 +1,7 @@
 package io.th0rgal.oraxen.mechanics.provided.gameplay.stringblock.sapling;
 
 import com.jeff_media.customblockdata.CustomBlockData;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.api.OraxenBlocks;
 import io.th0rgal.oraxen.compatibilities.provided.worldedit.WrappedWorldEdit;
@@ -13,11 +14,11 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import static io.th0rgal.oraxen.mechanics.provided.gameplay.stringblock.sapling.SaplingMechanic.SAPLING_KEY;
 
-public class SaplingTask extends BukkitRunnable {
+public class SaplingTask {
 
     private final int delay;
 
@@ -25,7 +26,6 @@ public class SaplingTask extends BukkitRunnable {
         this.delay = delay;
     }
 
-    @Override
     public void run() {
         if (!Bukkit.getPluginManager().isPluginEnabled("WorldEdit")) return;
         for (World world : Bukkit.getWorlds()) {
@@ -57,5 +57,15 @@ public class SaplingTask extends BukkitRunnable {
                 }
             }
         }
+    }
+
+    public @NotNull ScheduledTask run(OraxenPlugin oraxenPlugin, int i, int saplingGrowthCheckDelay) {
+        if (i <= 0) {
+            i = 1;
+        }
+        if (saplingGrowthCheckDelay <= 0) {
+            saplingGrowthCheckDelay = 1;
+        }
+        return Bukkit.getGlobalRegionScheduler().runAtFixedRate(oraxenPlugin, task -> run(), i, saplingGrowthCheckDelay);
     }
 }

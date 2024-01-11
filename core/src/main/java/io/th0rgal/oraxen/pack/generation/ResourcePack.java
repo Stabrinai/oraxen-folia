@@ -153,7 +153,7 @@ public class ResourcePack {
 
         generateSound(output);
 
-        Bukkit.getScheduler().scheduleSyncDelayedTask(OraxenPlugin.get(), () -> {
+        Bukkit.getGlobalRegionScheduler().run(OraxenPlugin.get(), task -> {
             OraxenPackGeneratedEvent event = new OraxenPackGeneratedEvent(output);
             EventUtils.callEvent(event);
             ZipUtils.writeZipFile(pack, event.getOutput());

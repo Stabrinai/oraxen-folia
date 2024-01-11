@@ -288,7 +288,7 @@ public class OraxenBlocks {
         if (mechanic.hasLight()) WrappedLightAPI.removeBlockLight(block.getLocation());
         if (mechanic.isTall()) blockAbove.setType(Material.AIR);
         block.setType(Material.AIR);
-        Bukkit.getScheduler().runTaskLater(OraxenPlugin.get(), () -> {
+        Bukkit.getRegionScheduler().runDelayed(OraxenPlugin.get(), block.getLocation(), task -> {
             StringBlockMechanicListener.fixClientsideUpdate(block.getLocation());
             if (blockAbove.getType() == Material.TRIPWIRE)
                 removeStringBlock(blockAbove, player, forceDrop);

@@ -45,11 +45,11 @@ public class WorldEditHandlers {
                 Mechanic mechanic = OraxenBlocks.getOraxenBlock(blockData);
                 if (blockData.getMaterial() == Material.NOTE_BLOCK) {
                     if (mechanic != null && Settings.WORLDEDIT_NOTEBLOCKS.toBool()) {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(OraxenPlugin.get(), () -> OraxenBlocks.place(mechanic.getItemID(), loc));
+                        Bukkit.getRegionScheduler().run(OraxenPlugin.get(), loc, task -> OraxenBlocks.place(mechanic.getItemID(), loc));
                     }
                 } else if (blockData.getMaterial() == Material.TRIPWIRE) {
                     if (mechanic != null && Settings.WORLDEDIT_STRINGBLOCKS.toBool()) {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(OraxenPlugin.get(), () -> OraxenBlocks.place(mechanic.getItemID(), loc));
+                        Bukkit.getRegionScheduler().run(OraxenPlugin.get(), loc, task -> OraxenBlocks.place(mechanic.getItemID(), loc));
                     }
                 } else {
                     if (world == null) return super.setBlock(pos, block);
@@ -58,7 +58,7 @@ public class WorldEditHandlers {
                     if (replacingMechanic instanceof StringBlockMechanic && !Settings.WORLDEDIT_STRINGBLOCKS.toBool()) return super.setBlock(pos, block);
                     if (replacingMechanic instanceof NoteBlockMechanic && !Settings.WORLDEDIT_NOTEBLOCKS.toBool()) return super.setBlock(pos, block);
 
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(OraxenPlugin.get(), () -> OraxenBlocks.remove(loc, null));
+                    Bukkit.getRegionScheduler().run(OraxenPlugin.get(), loc, task -> OraxenBlocks.remove(loc, null));
                 }
 
                 return getExtent().setBlock(pos, block);

@@ -2,7 +2,7 @@ package io.th0rgal.oraxen;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.ticxo.playeranimator.PlayerAnimatorImpl;
+//import com.ticxo.playeranimator.PlayerAnimatorImpl;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import io.th0rgal.oraxen.api.OraxenItems;
@@ -89,7 +89,7 @@ public class OraxenPlugin extends JavaPlugin {
     public void onEnable() {
         CommandAPI.onEnable();
         ProtectionLib.init(this);
-        if (!VersionUtil.atOrAbove("1.20.3")) PlayerAnimatorImpl.initialize(this);
+        // if (!VersionUtil.atOrAbove("1.20.3")) PlayerAnimatorImpl.initialize(this);
         audience = BukkitAudiences.create(this);
         clickActionManager = new ClickActionManager(this);
         supportsDisplayEntities = VersionUtil.atOrAbove("1.19.4");
@@ -140,8 +140,9 @@ public class OraxenPlugin extends JavaPlugin {
 
     private void postLoading() {
         new Metrics(this, 5371);
-        Bukkit.getScheduler().runTask(this, () ->
-                Bukkit.getPluginManager().callEvent(new OraxenItemsLoadedEvent()));
+        Bukkit.getGlobalRegionScheduler().run(this, scheduledTask -> {
+            Bukkit.getPluginManager().callEvent(new OraxenItemsLoadedEvent());
+        });
     }
 
     @Override

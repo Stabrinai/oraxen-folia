@@ -44,14 +44,16 @@ public class EfficiencyMechanicListener implements Listener {
                     type = EnumWrappers.PlayerDigType.SWAP_HELD_ITEMS;
                 }
                 if (type == EnumWrappers.PlayerDigType.START_DESTROY_BLOCK)
-                    Bukkit.getScheduler().runTask(OraxenPlugin.get(), () ->
-                            player.addPotionEffect(new PotionEffect(mechanic.getType(),
-                                    20 * 60 * 5,
-                                    mechanic.getAmount() - 1,
-                                    false, false, false)));
+                    player.getScheduler().run(OraxenPlugin.get(), task -> {
+                        player.addPotionEffect(new PotionEffect(mechanic.getType(),
+                                20 * 60 * 5,
+                                mechanic.getAmount() - 1,
+                                false, false, false));
+                    }, null);
                 else
-                    Bukkit.getScheduler().runTask(OraxenPlugin.get(), () ->
-                            player.removePotionEffect(mechanic.getType()));
+                    player.getScheduler().run(OraxenPlugin.get(), task -> {
+                        player.removePotionEffect(mechanic.getType());
+                    }, null);
             }
         };
         ProtocolLibrary.getProtocolManager().addPacketListener(listener);

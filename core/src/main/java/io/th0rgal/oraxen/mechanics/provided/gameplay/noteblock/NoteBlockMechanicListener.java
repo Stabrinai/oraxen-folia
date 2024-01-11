@@ -116,7 +116,7 @@ public class NoteBlockMechanicListener implements Listener {
             if (event.getEvent() != GameEvent.NOTE_BLOCK_PLAY) return;
             if (block.getType() != Material.NOTE_BLOCK) return;
             NoteBlock data = (NoteBlock) block.getBlockData().clone();
-            Bukkit.getScheduler().runTaskLater(OraxenPlugin.get(), () -> block.setBlockData(data, false), 1L);
+            Bukkit.getRegionScheduler().runDelayed(OraxenPlugin.get(), eLoc, t -> block.setBlockData(data, false), 1L);
         }
 
         public void updateAndCheck(Block block) {

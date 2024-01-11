@@ -82,9 +82,9 @@ public class WrappedLightAPI {
             StringBlockMechanic stringMechanic = OraxenBlocks.getStringMechanic(block);
 
             if (noteMechanic != null && noteMechanic.hasLight())
-                Bukkit.getScheduler().runTaskLater(OraxenPlugin.get(), () -> createBlockLight(block.getLocation(), noteMechanic.getLight()), 1);
+                Bukkit.getRegionScheduler().runDelayed(OraxenPlugin.get(), block.getLocation(), t -> createBlockLight(block.getLocation(), noteMechanic.getLight()), 1);
             else if (stringMechanic != null && stringMechanic.hasLight())
-                Bukkit.getScheduler().runTaskLater(OraxenPlugin.get(), () -> createBlockLight(block.getLocation(), stringMechanic.getLight()), 1);
+                Bukkit.getRegionScheduler().runDelayed(OraxenPlugin.get(), block.getLocation(), t -> createBlockLight(block.getLocation(), stringMechanic.getLight()), 1);
         }
 
     }

@@ -1,6 +1,7 @@
 package io.th0rgal.oraxen.hud;
 
 import com.jeff_media.morepersistentdatatypes.DataType;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.config.ConfigsManager;
 import io.th0rgal.oraxen.utils.AdventureUtils;
@@ -23,7 +24,7 @@ public class HudManager {
     public final NamespacedKey hudToggleKey;
     public final NamespacedKey hudDisplayKey;
     private final HudEvents hudEvents;
-    private static HudTask hudTask;
+    private static ScheduledTask hudTask;
     private static boolean hudTaskEnabled;
     private final Map<String, Hud> huds;
 
@@ -113,8 +114,8 @@ public class HudManager {
         if (hudUpdateTime == 0) return;
         if (huds.isEmpty()) return;
 
-        hudTask = new HudTask();
-        hudTask.runTaskTimer(OraxenPlugin.get(), 0, hudUpdateTime);
+        HudTask hud = new HudTask();
+        hudTask = hud.run(OraxenPlugin.get(), 0, hudUpdateTime);
         hudTaskEnabled = true;
     }
 

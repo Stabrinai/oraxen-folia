@@ -1,26 +1,26 @@
 package io.th0rgal.oraxen.mechanics.provided.cosmetic.aura.aura;
 
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.mechanics.provided.cosmetic.aura.AuraMechanic;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.concurrent.TimeUnit;
 
 public abstract class Aura {
 
     protected final AuraMechanic mechanic;
-    private BukkitRunnable runnable;
+    private ScheduledTask runnable;
 
     protected Aura(AuraMechanic mechanic) {
         this.mechanic = mechanic;
     }
 
-    BukkitRunnable getRunnable() {
-        return new BukkitRunnable() {
-            @Override
-            public void run() {
-                mechanic.players.forEach(Aura.this::spawnParticles);
-            }
-        };
+    void getRunnable() {
+        for (Player player : mechanic.players) {
+            Aura.this.spawnParticles(player);
+        }
     }
 
     protected abstract void spawnParticles(Player player);
@@ -28,8 +28,7 @@ public abstract class Aura {
     protected abstract long getDelay();
 
     public void start() {
-        runnable = getRunnable();
-        runnable.runTaskTimerAsynchronously(OraxenPlugin.get(), 0L, getDelay());
+        runnable = Bukkit.getAsyncScheduler().runAtFixedRate(OraxenPlugin.get(), t -> getRunnable(), 1L*50, getDelay()*50, TimeUnit.MILLISECONDS);
     }
 
     public void stop() {

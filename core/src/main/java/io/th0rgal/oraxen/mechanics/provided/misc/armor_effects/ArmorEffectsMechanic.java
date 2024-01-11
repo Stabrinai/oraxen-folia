@@ -1,5 +1,6 @@
 package io.th0rgal.oraxen.mechanics.provided.misc.armor_effects;
 
+import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.mechanics.Mechanic;
 import io.th0rgal.oraxen.mechanics.MechanicFactory;
 import io.th0rgal.oraxen.utils.customarmor.CustomArmorsTextures;
@@ -53,24 +54,26 @@ public class ArmorEffectsMechanic extends Mechanic {
     }
 
     public static void addEffects(Player player) {
-        for (int armorSlot : ArmorEffectsMechanic.ARMOR_SLOTS) {
-            ItemStack armorPiece = player.getInventory().getItem(armorSlot);
-            ArmorEffectsMechanic mechanic = (ArmorEffectsMechanic) ArmorEffectsFactory.getInstance().getMechanic(armorPiece);
-            if (mechanic == null) continue;
+        player.getScheduler().run(OraxenPlugin.get(), task -> {
+            for (int armorSlot : ArmorEffectsMechanic.ARMOR_SLOTS) {
+                ItemStack armorPiece = player.getInventory().getItem(armorSlot);
+                ArmorEffectsMechanic mechanic = (ArmorEffectsMechanic) ArmorEffectsFactory.getInstance().getMechanic(armorPiece);
+                if (mechanic == null) continue;
 
-            Set<PotionEffect> finalArmorEffects = new HashSet<>();
-            for (ArmorEffect armorEffect : mechanic.getArmorEffects()) {
-                if (armorEffect.requiresFullSet()) {
-                    boolean hasFullSet = ArmorEffectsMechanic.ARMOR_SLOTS.stream().filter(s -> s != armorSlot).allMatch(slot -> {
-                        ItemStack armor = player.getInventory().getItem(slot);
-                        return armor != null && CustomArmorsTextures.isSameArmorType(armorPiece, armor);
-                    });
+                Set<PotionEffect> finalArmorEffects = new HashSet<>();
+                for (ArmorEffect armorEffect : mechanic.getArmorEffects()) {
+                    if (armorEffect.requiresFullSet()) {
+                        boolean hasFullSet = ArmorEffectsMechanic.ARMOR_SLOTS.stream().filter(s -> s != armorSlot).allMatch(slot -> {
+                            ItemStack armor = player.getInventory().getItem(slot);
+                            return armor != null && CustomArmorsTextures.isSameArmorType(armorPiece, armor);
+                        });
 
-                    if (hasFullSet) finalArmorEffects.add(armorEffect.getEffect());
-                } else finalArmorEffects.add(armorEffect.getEffect());
+                        if (hasFullSet) finalArmorEffects.add(armorEffect.getEffect());
+                    } else finalArmorEffects.add(armorEffect.getEffect());
+                }
+
+                player.addPotionEffects(finalArmorEffects);
             }
-
-            player.addPotionEffects(finalArmorEffects);
-        }
+        }, null);
     }
 }

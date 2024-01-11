@@ -62,15 +62,16 @@ public class UploadManager {
 
         final long time = System.currentTimeMillis();
         Message.PACK_UPLOADING.log();
-        Bukkit.getScheduler().runTaskAsynchronously(OraxenPlugin.get(), () -> {
+        Bukkit.getAsyncScheduler().runNow(OraxenPlugin.get(), t -> {
             if (!hostingProvider.uploadPack(resourcePack.getFile())) {
                 Message.PACK_NOT_UPLOADED.log();
                 return;
             }
 
             OraxenPackUploadEvent uploadEvent = new OraxenPackUploadEvent(hostingProvider);
-            Bukkit.getScheduler().scheduleSyncDelayedTask(OraxenPlugin.get(), () ->
-                    Bukkit.getPluginManager().callEvent(uploadEvent));
+            Bukkit.getGlobalRegionScheduler().run(OraxenPlugin.get(), td -> {
+                Bukkit.getPluginManager().callEvent(uploadEvent);
+            });
 
             Message.PACK_UPLOADED.log(
                     AdventureUtils.tagResolver("url", hostingProvider.getPackURL()),
