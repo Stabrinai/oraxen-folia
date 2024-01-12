@@ -138,7 +138,7 @@ public class EnergyBlastMechanicManager implements Listener {
                         livingEntity.damage(mechanic.getDamage(), player);
                     }, null);
                 }
-        }, null, 0 , 1);
+        }, null, 1 , 1);
     }
 
     private void spawnParticle(World world, Location location, EnergyBlastMechanic mechanic) {

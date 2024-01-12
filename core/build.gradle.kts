@@ -16,10 +16,11 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
 
     val actionsVersion = "1.0.0-SNAPSHOT"
-    implementation("org.bstats:bstats-bukkit:3.0.0")
+    implementation("org.bstats:bstats-bukkit:3.0.1")
     implementation("dev.triumphteam:triumph-gui:3.1.5") { exclude("net.kyori") }
     implementation("io.th0rgal:protectionlib:1.3.6")
-    implementation("com.github.stefvanschie.inventoryframework:IF:0.10.12")
+    //implementation("com.github.stefvanschie.inventoryframework:IF:0.10.12")
+    implementation(files("../libs/compile/IF-0.10.13.1-all.jar"))
     implementation("com.jeff-media:custom-block-data:2.2.2")
     implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
     implementation("com.jeff-media:persistent-data-serializer:1.0")
