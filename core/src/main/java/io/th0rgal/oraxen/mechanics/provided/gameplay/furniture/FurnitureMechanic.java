@@ -36,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class FurnitureMechanic extends Mechanic {
 
@@ -366,14 +367,16 @@ public class FurnitureMechanic extends Mechanic {
         ItemStack item;
         if (evolvingFurniture == null) {
             item = ItemUtils.editItemMeta(originalItem.clone(), meta -> meta.setDisplayName(""));
-        } else item = placedItem;
+        } else {
+            item = placedItem;
+        }
         item.setAmount(1);
-
-        Entity baseEntity = EntityUtils.spawnEntity(correctedSpawnLocation(location), entityClass, (e) -> setEntityData(e, yaw, item, facing));
+        Entity baseEntity = EntityUtils.spawnEntity(correctedSpawnLocation(location), entityClass, (e) -> {
+            setEntityData(e, yaw, item, facing);
+        });
         if (this.isModelEngine() && Bukkit.getPluginManager().isPluginEnabled("ModelEngine")) {
             spawnModelEngineFurniture(baseEntity);
         }
-
         return baseEntity;
     }
 
@@ -387,43 +390,45 @@ public class FurnitureMechanic extends Mechanic {
     }
 
     private void setEntityData(Entity entity, float yaw, ItemStack item, BlockFace facing) {
-        setBaseFurnitureData(entity);
-        Location location = entity.getLocation();
-        if (entity instanceof ItemFrame frame) {
-            setFrameData(frame, item, yaw, facing);
+        entity.getScheduler().run(OraxenPlugin.get(), task -> {
+            setBaseFurnitureData(entity);
+            Location location = entity.getLocation();
+            if (entity instanceof ItemFrame frame) {
+                setFrameData(frame, item, yaw, facing);
 
-            if (hasBarriers()) setBarrierHitbox(entity, location, yaw, true);
-            else {
-                float width = hasHitbox() ? hitbox.width : 1f;
-                float height = hasHitbox() ? hitbox.height : 1f;
-                Entity interaction = spawnInteractionEntity(frame, location, width, height);
+                if (hasBarriers()) setBarrierHitbox(entity, location, yaw, true);
+                else {
+                    float width = hasHitbox() ? hitbox.width : 1f;
+                    float height = hasHitbox() ? hitbox.height : 1f;
+                    Entity interaction = spawnInteractionEntity(frame, location, width, height);
 
-                Block block = location.getBlock();
-                if (hasSeat() && interaction != null) {
-                    UUID seatUuid = spawnSeat(block, hasSeatYaw ? seatYaw : FurnitureMechanic.getFurnitureYaw(frame));
+                    Block block = location.getBlock();
+                    if (hasSeat() && interaction != null) {
+                        UUID seatUuid = spawnSeat(block, hasSeatYaw ? seatYaw : FurnitureMechanic.getFurnitureYaw(frame));
+                        interaction.getPersistentDataContainer().set(SEAT_KEY, DataType.UUID, seatUuid);
+                        frame.getPersistentDataContainer().set(SEAT_KEY, DataType.UUID, seatUuid);
+                    }
+                    if (light != -1) {
+                        WrappedLightAPI.createBlockLight(location, light);
+                    }
+                }
+            } else if (entity instanceof ItemDisplay itemDisplay) {
+                setItemDisplayData(itemDisplay, item, yaw, displayEntityProperties);
+                float width = hasHitbox() ? hitbox.width : displayEntityProperties.getDisplayWidth();
+                float height = hasHitbox() ? hitbox.height : displayEntityProperties.getDisplayHeight();
+                Interaction interaction = spawnInteractionEntity(itemDisplay, location, width, height);
+                Location barrierLoc = EntityUtils.isNone(itemDisplay) && displayEntityProperties.hasScale()
+                        ? location.clone().subtract(0, 0.5 * displayEntityProperties.getScale().y(), 0) : location;
+
+                if (hasBarriers()) setBarrierHitbox(entity, barrierLoc, yaw, false);
+                else if (hasSeat() && interaction != null) {
+                    UUID seatUuid = spawnSeat(location.getBlock(), hasSeatYaw ? seatYaw : yaw);
                     interaction.getPersistentDataContainer().set(SEAT_KEY, DataType.UUID, seatUuid);
-                    frame.getPersistentDataContainer().set(SEAT_KEY, DataType.UUID, seatUuid);
+                    itemDisplay.getPersistentDataContainer().set(SEAT_KEY, DataType.UUID, seatUuid);
                 }
-                if (light != -1) {
-                    WrappedLightAPI.createBlockLight(location, light);
-                }
+                if (light != -1) WrappedLightAPI.createBlockLight(location, light);
             }
-        } else if (entity instanceof ItemDisplay itemDisplay) {
-            setItemDisplayData(itemDisplay, item, yaw, displayEntityProperties);
-            float width = hasHitbox() ? hitbox.width : displayEntityProperties.getDisplayWidth();
-            float height = hasHitbox() ? hitbox.height : displayEntityProperties.getDisplayHeight();
-            Interaction interaction = spawnInteractionEntity(itemDisplay, location, width, height);
-            Location barrierLoc = EntityUtils.isNone(itemDisplay) && displayEntityProperties.hasScale()
-                            ? location.clone().subtract(0, 0.5 * displayEntityProperties.getScale().y(), 0) : location;
-
-            if (hasBarriers()) setBarrierHitbox(entity, barrierLoc, yaw, false);
-            else if (hasSeat() && interaction != null) {
-                UUID seatUuid = spawnSeat(location.getBlock(), hasSeatYaw ? seatYaw : yaw);
-                interaction.getPersistentDataContainer().set(SEAT_KEY, DataType.UUID, seatUuid);
-                itemDisplay.getPersistentDataContainer().set(SEAT_KEY, DataType.UUID, seatUuid);
-            }
-            if (light != -1) WrappedLightAPI.createBlockLight(location, light);
-        }
+        }, null);
     }
 
     private Interaction spawnInteractionEntity(Entity entity, Location location, float width, float height) {

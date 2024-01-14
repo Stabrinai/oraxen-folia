@@ -22,6 +22,8 @@ import io.th0rgal.oraxen.mechanics.provided.gameplay.noteblock.NoteBlockMechanic
 import io.th0rgal.oraxen.mechanics.provided.gameplay.noteblock.NoteBlockMechanicFactory;
 import io.th0rgal.oraxen.mechanics.provided.gameplay.noteblock.directional.DirectionalBlock;
 import io.th0rgal.oraxen.utils.BlockHelpers;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -134,8 +136,7 @@ public class WorldEditUtils {
                     Operations.complete(operation);
                 editSession.close();
             } catch (WorldEditException e) {
-                OraxenPlugin.get().getLogger().warning("Could not paste schematic for sapling-mechanic");
-                if (Settings.DEBUG.toBool()) e.printStackTrace();
+                LogManager.getLogger(WorldEditUtils.class).log(Level.FATAL, e.getMessage(), e);
             }
 
         } catch (Exception e) {

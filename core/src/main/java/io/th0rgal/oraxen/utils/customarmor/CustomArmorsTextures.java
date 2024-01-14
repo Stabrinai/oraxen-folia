@@ -10,6 +10,8 @@ import io.th0rgal.oraxen.utils.AdventureUtils;
 import io.th0rgal.oraxen.utils.VirtualFile;
 import io.th0rgal.oraxen.utils.logs.Logs;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.bukkit.Color;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -84,7 +86,7 @@ public class CustomArmorsTextures {
         try {
             img = ImageIO.read(file);
         } catch (IOException e) {
-            OraxenPlugin.get().getLogger().warning("Error while reading " + name + ": " + e.getMessage());
+            LogManager.getLogger(CustomArmorsTextures.class).log(Level.FATAL, e.getMessage(), e);
             return false;
         }
 
@@ -150,11 +152,11 @@ public class CustomArmorsTextures {
         try {
             original = ImageIO.read(file);
         } catch (IOException e) {
-            OraxenPlugin.get().getLogger().warning("Error while reading " + name + ": " + e.getMessage());
+            LogManager.getLogger(CustomArmorsTextures.class).log(Level.FATAL, e.getMessage(), e);
             return false;
         }
         if (original == null) {
-            OraxenPlugin.get().getLogger().warning("Error while reading " + name + ": Image is null");
+            LogManager.getLogger(CustomArmorsTextures.class).log(Level.FATAL, "Error while reading %s: Image is null".formatted(name));
             return false;
         }
 
@@ -171,7 +173,7 @@ public class CustomArmorsTextures {
             try {
                 emissive = ImageIO.read(emissiveFile);
             } catch (IOException e) {
-                OraxenPlugin.get().getLogger().warning("Error while reading " + name + ": " + e.getMessage());
+                LogManager.getLogger(CustomArmorsTextures.class).log(Level.FATAL, e.getMessage(), e);
                 return false;
             }
             BufferedImage emissiveImage = initLayer(emissive);
@@ -328,7 +330,7 @@ public class CustomArmorsTextures {
         try {
             img = ImageIO.read(original);
         } catch (IOException e) {
-            OraxenPlugin.get().getLogger().warning("Error while reading InputStream: " + e.getMessage());
+            LogManager.getLogger(CustomArmorsTextures.class).log(Level.FATAL, e.getMessage(), e);
             return original;
         }
 

@@ -1,6 +1,8 @@
 package io.th0rgal.oraxen.utils;
 
+import io.th0rgal.oraxen.OraxenPlugin;
 import io.th0rgal.oraxen.utils.logs.Logs;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
@@ -8,7 +10,10 @@ import org.bukkit.entity.ItemDisplay;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.LogManager;
 
 @SuppressWarnings({"unchecked", "unused", "deprecation"})
 public class EntityUtils {

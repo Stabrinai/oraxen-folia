@@ -20,8 +20,9 @@ dependencies {
     implementation("dev.triumphteam:triumph-gui:3.1.5") { exclude("net.kyori") }
     implementation("io.th0rgal:protectionlib:1.3.6")
     //implementation("com.github.stefvanschie.inventoryframework:IF:0.10.12")
-    implementation(files("../libs/compile/IF-0.10.13.1-all.jar"))
-    implementation("com.jeff-media:custom-block-data:2.2.2")
+    implementation(files("../libs/compile-folia/IF-0.10.13.1-all.jar"))
+    //implementation("com.jeff-media:custom-block-data:2.2.2")
+    implementation(files("../libs/compile-folia/custom-block-data-2.2.2.jar"))
     implementation("com.jeff_media:MorePersistentDataTypes:2.4.0")
     implementation("com.jeff-media:persistent-data-serializer:1.0")
     implementation("gs.mclo:java:2.2.1")
